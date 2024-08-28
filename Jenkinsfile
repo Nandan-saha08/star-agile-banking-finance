@@ -1,31 +1,35 @@
 pipeline {
     agent any
-    stages{
-        stage('git cloned'){
-            steps{
-                git url:'https://github.com/Nandan-saha08/star-agile-banking-finance.git', branch: "master
-                
+    stages {
+        stage('Git Clone') {
+            steps {
+                git url: 'https://github.com/Nandan-saha08/star-agile-banking-finance.git', branch: "master"
             }
         }
-        stage('Build docker image'){
-            steps{
-                script{
+        stage('Build Docker Image') {
+            steps {
+                script {
                     sh 'docker build -t nandansaha0807/staragileprojectfinance:v1 .'
                     sh 'docker images'
                 }
             }
         }
-         stage('Docker login') {
-             Steps {
-                  withCredentials([usernamePassword(credentialsID: 'dockerhub-pwd', passwordVariable: 'PASS', usernameVariable: 'USER')])
-                       sh "echo $PASS  "
-        
-     stage('Deploy') {
+        stage('Docker Login') {
             steps {
-                sh 'sudo docker run -itd --name My-first-containe21211 -p 8083:8081 nandansaha0807/staragileprojectfinance:v1'
-                  
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-pwd', passwordVariable: 'PASS', usernameVariable: 'USER')]) {
+                    sh 'echo $PASS | docker login -u $USER --password-stdin'
                 }
             }
-        
+        }
+        stage('Push Docker Image') {
+            steps {
+                sh 'docker push nandansaha0807/staragileprojectfinance:v1'
+            }
+        }
+        stage('Deploy') {
+            steps {
+                sh 'sudo docker run -itd --name Project_Con01 -p 8083:8081 nandansaha0807/staragileprojectfinance:v1'
+            }
+        }
     }
 }
